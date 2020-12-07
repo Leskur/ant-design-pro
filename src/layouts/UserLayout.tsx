@@ -1,20 +1,18 @@
 import { DefaultFooter, MenuDataItem, getMenuData, getPageTitle } from '@ant-design/pro-layout';
-import { Helmet } from 'react-helmet';
-import { Link } from 'umi';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { Link, SelectLang, useIntl, ConnectProps, connect, FormattedMessage } from 'umi';
 import React from 'react';
-import { connect } from 'dva';
-import { formatMessage } from 'umi-plugin-react/locale';
-
-import SelectLang from '@/components/SelectLang';
-import { ConnectProps, ConnectState } from '@/models/connect';
+import { ConnectState } from '@/models/connect';
 import logo from '../assets/logo.svg';
 import styles from './UserLayout.less';
 
-export interface UserLayoutProps extends ConnectProps {
-  breadcrumbNameMap: { [path: string]: MenuDataItem };
+export interface UserLayoutProps extends Partial<ConnectProps> {
+  breadcrumbNameMap: {
+    [path: string]: MenuDataItem;
+  };
 }
 
-const UserLayout: React.FC<UserLayoutProps> = props => {
+const UserLayout: React.FC<UserLayoutProps> = (props) => {
   const {
     route = {
       routes: [],
@@ -27,15 +25,16 @@ const UserLayout: React.FC<UserLayoutProps> = props => {
       pathname: '',
     },
   } = props;
+  const { formatMessage } = useIntl();
   const { breadcrumb } = getMenuData(routes);
   const title = getPageTitle({
     pathname: location.pathname,
-    breadcrumb,
     formatMessage,
+    breadcrumb,
     ...props,
   });
   return (
-    <>
+    <HelmetProvider>
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={title} />
@@ -53,16 +52,19 @@ const UserLayout: React.FC<UserLayoutProps> = props => {
                 <span className={styles.title}>Ant Design</span>
               </Link>
             </div>
-            <div className={styles.desc}>Ant Design 是西湖区最具影响力的 Web 设计规范</div>
+            <div className={styles.desc}>
+              <FormattedMessage
+                id="pages.layouts.userLayout.title"
+                defaultMessage="Ant Design 是西湖区最具影响力的 Web 设计规范"
+              />
+            </div>
           </div>
           {children}
         </div>
         <DefaultFooter />
       </div>
-    </>
+    </HelmetProvider>
   );
 };
 
-export default connect(({ settings }: ConnectState) => ({
-  ...settings,
-}))(UserLayout);
+export default connect(({ settings }: ConnectState) => ({ ...settings }))(UserLayout);
